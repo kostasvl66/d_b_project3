@@ -1,0 +1,87 @@
+Η υλοποίηση του αλγορίθμου γίνεται οργανωμένη σε 3 μικρές "βιβλιοθήκες": CHUNK, sort, merge. Ακολουθεί η επεξήγησή τους.
+
+Βιβλιοθήκη CHUNK:
+
+/* Represents a chunk of records in a file, defining the file descriptor, starting and ending block IDs, and the counts of records and blocks in the chunk. Useful for managing and sorting records within specific chunks. */
+typedef struct {
+    int file_desc;
+    int from_BlockId; // inclusive
+    int to_BlockId;   // inclusive
+    int recordsInChunk;
+    int blocksInChunk;
+} CHUNK;
+
+/* Represents an iterator for traversing chunks within a file, storing the file descriptor, first block, last block ID, and the total number of blocks in each chunk. Useful for efficiently iterating over file chunks.*/
+typedef struct {
+    int file_desc;
+    int firstBlockID;
+    int lastBlockID;
+    int blocksInChunk;
+} CHUNK_Iterator;
+
+/* Creates a ChunkIterator for efficient traversal of chunks within a file, specified by the file descriptor. The iterator is configured with a defined range of blocks (usually starting from block 1), along with the size of each chunk and the maximum number of records in each block.*/
+CHUNK_Iterator CHUNK_CreateIterator(int fileDesc, int blocksInChunk);
+
+/* Retrieves the next CHUNK in the sequence as per the provided CHUNK_Iterator */ // εδώ προφανώς την πρώτη φορά που καλείται δίνει το πρώτο CHUNK, όχι το δεύτερο
+int CHUNK_GetNext(CHUNK_Iterator *iterator,CHUNK* chunk);
+
+/* Retrieves the ith record from a CHUNK of blocks in a heap file. Returns 0 if successful, populating the 'record' parameter; otherwise, -1. Assumes sequential ordering of records within the chunk.*/
+int CHUNK_GetIthRecordInChunk(CHUNK* chunk,  int i, Record* record);
+
+/* Updates the ith record in a chunk. Returns 0 if successful; -1 if unsuccessful. Facilitates efficient and controlled updates within a chunk.*/
+int CHUNK_UpdateIthRecord(CHUNK* chunk,  int i, Record record);
+
+/* This function is used to print the records within a chunk.*/
+void CHUNK_Print(CHUNK chunk);
+
+
+/* Iterates through records in a CHUNK, encapsulating the id of the current block and a cursor in that block. */
+typedef struct CHUNK_RecordIterator {
+    CHUNK chunk;
+    int currentBlockId;
+    int cursor;
+} CHUNK_RecordIterator;
+
+/* Creates a record iterator for efficient traversal within a CHUNK. */
+CHUNK_RecordIterator CHUNK_CreateRecordIterator(CHUNK *chunk);
+
+
+/* Function to get the next record from the iterator. */
+int CHUNK_GetNextRecord(CHUNK_RecordIterator *iterator,Record* record);
+
+Για τις παραπάνω συναρτήσεις ας θεωρήσουμε ότι όσες επιστρέφουν ακέραιο για success/failure, η σύμβαση είναι 0 success, -1 failure. Επίσης σημειώνεται ότι η βιβλιοθήκη CHUNK είναι αποδεκτό να τροποποιηθεί είτε στα structs είτε στις συναρτήσεις, σε περίπτωση που κατά την υλοποίηση θεωρήσεις ότι μια τροποποίηση θα βοηθούσε.
+
+Βιβλιοθήκη sort:
+
+/* Determines if two records should be swapped during sorting, returning true if the order needs adjustment.*/
+bool shouldSwap(Record* rec1, Record* rec2);
+
+/* Sorts the contents of a file identified by 'file_desc' in chunks, where each chunk contains 'numBlocksInChunk' blocks. The sorting is performed in-place within each chunk, using an appropriate sorting algorithm.*/ // προφανώς αυτή η συνάρτηση εσωτερικά θα καλεί την sort_Chunk() για κάθε chunk
+void sort_FileInChunks(int file_desc, int numBlocksInChunk);
+
+/* Sorts records within a CHUNK in ascending order based on the name and surname of each person. */
+void sort_Chunk(CHUNK* chunk);
+
+Όπως φαίνεται, η βιβλιοθήκη sort υλοποιεί το βήμα της ταξινόμησης (1ο βήμα) στον συνολικό αλγόριθμο της εργασίας, και χρησιμοποιεί την βιβλιοθήκη CHUNK εσωτερικά (και ίσως την HP αν χρειαστεί).
+
+Βιβλιοθήκη merge (1 συνάρτηση):
+
+/* Merges every b chunks of size chunkSize from the input file to the specified output file. The function takes input file and output file descriptors, chunk size, and the number of chunks to merge. It should internally use a CHUNK_Iterator and a CHUNK_RecordIterator.*/
+void merge(int input_FileDesc, int chunkSize, int bWay, int output_FileDesc );
+
+Αυτή η συνάρτηση υλοποιεί το 2ο μέρος του συνολικού αλγορίθμου (τα merges) και προφανώς απαιτεί να έχει ήδη γίνει το πρώτο βήμα (ταξινόμηση). Αυτή η βιβλιοθήκη εν μέρει εξαρτάται από την sort, επειδή πιθανότατα θα χρειαστεί και εδώ η shouldSwap() για την σύγκριση Records. Επίσης αυτή η βιβλιοθήκη εξαρτάται από την βιβλιοθήκη CHUNK.
+
+Τέλος, για την πλήρη εικόνα θα σου δείξω και τα περιεχόμενα του record.h σε περίπτωση που χρειαστεί κάτι (αυτά είναι υλοποιημένα):
+typedef struct Record {
+  	char name[15];
+	char surname[15];
+	char city[15];
+	int id;	
+	char delimiter[2];
+} Record;
+
+Record randomRecord();
+
+void printRecord(Record record);
+
+Οι βιβλιοθήκες CHUNK, sort, merge είναι αυτές προς υλοποίηση. Για την υλοποίηση κάθε συνάρτησης, θα σου την ζητάω ξεχωριστά. Επομένως περίμενε για να σου ζητήσω κάποια από τις συναρτήσεις, θεωρώντας ότι μπορείς να χρησιμοποιήσεις τις υπόλοιπες γιατί είτε είναι ήδη υλοποιημένες είτε θα υλοποιηθούν.
