@@ -43,9 +43,6 @@ typedef struct HP_info{
     int blockCapacity;
 } HP_info;
 
-extern struct HP_info openFiles[20]; 
-
-Ας θεωρήσουμε ότι κάθε ανοιχτό heap file (μέσω της HP_OpenFile()), αντιστοιχεί στο openFiles[i], όπου i είναι η σειρά με την οποία τo κάθε heap file ανοίχτηκε.
 Οι συναρτήσεις HP_UpdateRecord και HP_GetRecord προτείνονται για την απλοποίηση της υλοποίησης της εργασίας. Θα πρέπει να συνοδεύονται από το αντίστοιχο HP_Unpin.
 
 Περίμενε τώρα να σου στείλω τις συναρτήσεις προς υλοποίηση.
