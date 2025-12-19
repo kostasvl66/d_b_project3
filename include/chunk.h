@@ -1,10 +1,9 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+#include "hp_file.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "hp_file.h"
-
 
 /* Represents a chunk of records in a file, defining the file descriptor, starting and ending block IDs, and the counts of records and blocks in the chunk. Useful for managing and sorting records within specific chunks. */
 typedef struct {
@@ -27,17 +26,16 @@ typedef struct {
 CHUNK_Iterator CHUNK_CreateIterator(int fileDesc, int blocksInChunk);
 
 /* Retrieves the next CHUNK in the sequence as per the provided CHUNK_Iterator. */
-int CHUNK_GetNext(CHUNK_Iterator *iterator,CHUNK* chunk);
+int CHUNK_GetNext(CHUNK_Iterator *iterator, CHUNK *chunk);
 
 /* Retrieves the ith record from a CHUNK of blocks in a heap file. Returns 0 if successful, populating the 'record' parameter; otherwise, -1. Assumes sequential ordering of records within the chunk.*/
-int CHUNK_GetIthRecordInChunk(CHUNK* chunk,  int i, Record* record);//
+int CHUNK_GetIthRecordInChunk(CHUNK *chunk, int i, Record *record); //
 
 /* Updates the ith record in a chunk. Returns 0 if successful; -1 if unsuccessful. Facilitates efficient and controlled updates within a chunk.*/
-int CHUNK_UpdateIthRecord(CHUNK* chunk,  int i, Record record);//
+int CHUNK_UpdateIthRecord(CHUNK *chunk, int i, Record record); //
 
 /* This function is used to print the records within a chunk.*/
-void CHUNK_Print(CHUNK chunk);//
-
+void CHUNK_Print(CHUNK chunk); //
 
 /* Iterates through records in a CHUNK, encapsulating the id of the current block and a cursor in that block. */
 typedef struct CHUNK_RecordIterator {
@@ -49,11 +47,7 @@ typedef struct CHUNK_RecordIterator {
 /* Creates a record iterator for efficient traversal within a CHUNK. */
 CHUNK_RecordIterator CHUNK_CreateRecordIterator(CHUNK *chunk);
 
-
 /* Function to get the next record from the iterator. */
-int CHUNK_GetNextRecord(CHUNK_RecordIterator *iterator,Record* record);
+int CHUNK_GetNextRecord(CHUNK_RecordIterator *iterator, Record *record);
 
-
-
-
-#endif  // MY_HEADER_H
+#endif // MY_HEADER_H
