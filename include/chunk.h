@@ -15,11 +15,11 @@ typedef struct {
     int blocksInChunk;
 } CHUNK;
 
-/* Represents an iterator for traversing chunks within a file, storing the file descriptor, current block, last block ID, and the total number of blocks in each chunk. Useful for efficiently iterating over file chunks.*/
+/* Represents an iterator for traversing chunks within a file, storing the file descriptor, first block, last block ID, and the total number of blocks in each chunk. Useful for efficiently iterating over file chunks.*/
 typedef struct {
     int file_desc;
-    int current;
-    int lastBlocksID;
+    int firstBlockID;
+    int lastBlockID;
     int blocksInChunk;
 } CHUNK_Iterator;
 
