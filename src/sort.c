@@ -29,7 +29,17 @@ bool shouldSwap(Record* rec1, Record* rec2) {
     return false;      // rec1 <= rec2
 }
 
+// sort_FileInChunks: ταξινομεί το αρχείο σε chunks, χρησιμοποιώντας sort_Chunk για κάθε chunk
 void sort_FileInChunks(int file_desc, int numBlocksInChunk) {
+    // Δημιουργία iterator για τα chunks
+    CHUNK_Iterator iterator = CHUNK_CreateIterator(file_desc, numBlocksInChunk);
+    CHUNK chunk;
+
+    // Επανάληψη μέχρι να τελειώσουν όλα τα chunks
+    while (CHUNK_GetNext(&iterator, &chunk) == 0) {
+        // Ταξινόμηση του τρέχοντος chunk
+        sort_Chunk(&chunk);
+    }
 }
 
 /* Comparator wrapper for qsort */
