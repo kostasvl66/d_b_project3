@@ -8,25 +8,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-bool shouldSwap(Record* rec1, Record* rec2) {
+bool shouldSwap(Record *rec1, Record *rec2) {
     int cmp;
 
     // Πρώτα σύγκριση ως προς name
     cmp = strcmp(rec1->name, rec2->name);
     if (cmp > 0) {
-        return true;   // rec1 > rec2
+        return true; // rec1 > rec2
     }
     if (cmp < 0) {
-        return false;  // rec1 < rec2
+        return false; // rec1 < rec2
     }
 
     // Αν τα name είναι ίσα, σύγκριση ως προς surname
     cmp = strcmp(rec1->surname, rec2->surname);
     if (cmp > 0) {
-        return true;   // rec1 > rec2
+        return true; // rec1 > rec2
     }
 
-    return false;      // rec1 <= rec2
+    return false; // rec1 <= rec2
 }
 
 // sort_FileInChunks: ταξινομεί το αρχείο σε chunks, χρησιμοποιώντας sort_Chunk για κάθε chunk
@@ -48,14 +48,14 @@ static int recordComparator(const void *a, const void *b) {
     Record *rec2 = (Record *)b;
 
     if (shouldSwap(rec1, rec2))
-        return 1;   // rec1 > rec2
+        return 1; // rec1 > rec2
     if (shouldSwap(rec2, rec1))
-        return -1;  // rec1 < rec2
+        return -1; // rec1 < rec2
 
-    return 0;       // equal
+    return 0; // equal
 }
 
-void sort_Chunk(CHUNK* chunk) {
+void sort_Chunk(CHUNK *chunk) {
     if (chunk == NULL || chunk->recordsInChunk <= 1)
         return;
 
@@ -70,7 +70,7 @@ void sort_Chunk(CHUNK* chunk) {
 
     /* Read all records from the chunk */
     for (int i = 0; i < n; i++) {
-        if (CHUNK_GetIthRecord(chunk, i, &records[i]) != 0) {
+        if (CHUNK_GetIthRecordInChunk(chunk, i, &records[i]) != 0) {
             free(records);
             return;
         }
