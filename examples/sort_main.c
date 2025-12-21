@@ -62,6 +62,7 @@ void mergePhases(int inputFileDesc, int chunkSize, int bWay, int *fileCounter) {
 
     // validating last output
     int lastValidChunkSize = chunkSize / bWay;
+    printf("lastValidChunkSize: %d\n", lastValidChunkSize);
     print_and_validate(outputFileDesc, lastValidChunkSize);
 
     HP_CloseFile(outputFileDesc);
