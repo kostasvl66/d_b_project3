@@ -19,7 +19,7 @@ int nextOutputFile(int *fileCounter);
 void print_and_validate(int file_desc, int chunkSize);
 
 int main() {
-    int chunkSize = 5;
+    int chunkSize = 20;
     int bWay = 4;
     int fileIterator = 0;
     //
@@ -93,7 +93,7 @@ void print_and_validate(int file_desc, int chunkSize) {
     // validation
     Record prev, current;
     int recordsInChunk = chunk.recordsInChunk;
-    for (int i = 1; i < recordsInChunk; i++) {        
+    for (int i = 1; i < recordsInChunk; i++) {
         if (CHUNK_GetIthRecordInChunk(&chunk, i - 1, &prev) == -1) {
             fprintf(stderr, "Failed to get %dth record.\n", i - 1);
             return;
@@ -117,4 +117,3 @@ void print_and_validate(int file_desc, int chunkSize) {
 
     printf("All records are sorted.\n");
 }
-
