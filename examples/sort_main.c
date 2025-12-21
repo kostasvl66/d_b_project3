@@ -53,6 +53,7 @@ void sortPhase(int file_desc, int chunkSize) {
 void mergePhases(int inputFileDesc, int chunkSize, int bWay, int *fileCounter) {
     int outputFileDesc;
     while (chunkSize <= HP_GetIdOfLastBlock(inputFileDesc)) {
+        printf("HP_GetIdOfLastBlock(inputFileDesc) = %d\n", HP_GetIdOfLastBlock(inputFileDesc));
         outputFileDesc = nextOutputFile(fileCounter);
         merge(inputFileDesc, chunkSize, bWay, outputFileDesc);
         HP_CloseFile(inputFileDesc);
