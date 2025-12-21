@@ -52,19 +52,15 @@ void sortPhase(int file_desc, int chunkSize) {
 /* Performs the merge phase of the external merge sort algorithm  using chunks of size 'chunkSize' and 'bWay' merging. The merge phase may be performed in more than one cycles.*/
 void mergePhases(int inputFileDesc, int chunkSize, int bWay, int *fileCounter) {
     int outputFileDesc;
+    printf("HP_GetIdOfLastBlock(inputFileDesc) = %d\n", HP_GetIdOfLastBlock(inputFileDesc));
     while (chunkSize <= HP_GetIdOfLastBlock(inputFileDesc)) {
-        printf("HP_GetIdOfLastBlock(inputFileDesc) = %d\n", HP_GetIdOfLastBlock(inputFileDesc));
         outputFileDesc = nextOutputFile(fileCounter);
         merge(inputFileDesc, chunkSize, bWay, outputFileDesc);
         HP_CloseFile(inputFileDesc);
         chunkSize *= bWay;
         inputFileDesc = outputFileDesc;
     }
-
-    // validating last output
-    int lastValidChunkSize = chunkSize / bWay;
-    printf("lastValidChunkSize: %d\n", lastValidChunkSize);
-    print_and_validate(outputFileDesc, lastValidChunkSize);
+    print_and_validate(outputFileDesc, HP_GetIdOfLastBlock(inputFileDesc));
 
     HP_CloseFile(outputFileDesc);
 }
