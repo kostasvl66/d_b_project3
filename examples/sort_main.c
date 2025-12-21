@@ -16,6 +16,8 @@ void mergePhases(int inputFileDesc, int chunkSize, int bWay, int *fileCounter);
 
 int nextOutputFile(int *fileCounter);
 
+void print_and_validate(int file_desc, int chunkSize);
+
 int main() {
     int chunkSize = 5;
     int bWay = 4;
@@ -49,15 +51,20 @@ void sortPhase(int file_desc, int chunkSize) {
 
 /* Performs the merge phase of the external merge sort algorithm  using chunks of size 'chunkSize' and 'bWay' merging. The merge phase may be performed in more than one cycles.*/
 void mergePhases(int inputFileDesc, int chunkSize, int bWay, int *fileCounter) {
-    int oututFileDesc;
+    int outputFileDesc;
     while (chunkSize <= HP_GetIdOfLastBlock(inputFileDesc)) {
-        oututFileDesc = nextOutputFile(fileCounter);
-        merge(inputFileDesc, chunkSize, bWay, oututFileDesc);
+        outputFileDesc = nextOutputFile(fileCounter);
+        merge(inputFileDesc, chunkSize, bWay, outputFileDesc);
         HP_CloseFile(inputFileDesc);
         chunkSize *= bWay;
-        inputFileDesc = oututFileDesc;
+        inputFileDesc = outputFileDesc;
     }
-    HP_CloseFile(oututFileDesc);
+
+    // validating last output
+    int lastValidChunkSize = chunkSize / bWay;
+    print_and_validate(outputFileDesc, lastValidChunkSize);
+
+    HP_CloseFile(outputFileDesc);
 }
 
 /*Creates a sequence of heap files: out0.db, out1.db, ... and returns for each heap file its corresponding file descriptor. */
@@ -70,3 +77,44 @@ int nextOutputFile(int *fileCounter) {
     HP_OpenFile(mergedFile, &file_desc);
     return file_desc;
 }
+
+void print_and_validate(int file_desc, int chunkSize) {
+    CHUNK_Iterator it = CHUNK_CreateIterator(file_desc, chunkSize);
+    CHUNK chunk;
+    if (CHUNK_GetNext(&it, &chunk) == -1) {
+        fprintf(stderr, "Failed to get resulting chunk.\n");
+        return;
+    }
+
+    // printing
+    printf("Resulting chunk:\n");
+    CHUNK_Print(chunk);
+
+    // validation
+    Record prev, current;
+    int recordsInChunk = chunk.recordsInChunk;
+    for (int i = 1; i < recordsInChunk; i++) {        
+        if (CHUNK_GetIthRecordInChunk(&chunk, i - 1, &prev) == -1) {
+            fprintf(stderr, "Failed to get %dth record.\n", i - 1);
+            return;
+        }
+
+        if (CHUNK_GetIthRecordInChunk(&chunk, i, &current) == -1) {
+            fprintf(stderr, "Failed to get %dth record.\n", i);
+            return;
+        }
+
+        if (shouldSwap(&prev, &current)) {
+            printf("Found unsorted records.\n");
+            return;
+        }
+    }
+
+    if (CHUNK_GetNext(&it, &chunk) == 0) {
+        fprintf(stderr, "Found more than one resulting chunks.\n");
+        return;
+    }
+
+    printf("All records are sorted.\n");
+}
+
