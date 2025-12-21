@@ -22,7 +22,7 @@ int main() {
     int chunkSize = 20;
     int bWay = 4;
     int fileIterator = 0;
-    //
+    
     BF_Init(LRU);
     int file_desc = createAndPopulateHeapFile(FILE_NAME);
     sortPhase(file_desc, chunkSize);
@@ -52,7 +52,6 @@ void sortPhase(int file_desc, int chunkSize) {
 /* Performs the merge phase of the external merge sort algorithm  using chunks of size 'chunkSize' and 'bWay' merging. The merge phase may be performed in more than one cycles.*/
 void mergePhases(int inputFileDesc, int chunkSize, int bWay, int *fileCounter) {
     int outputFileDesc;
-    printf("HP_GetIdOfLastBlock(inputFileDesc) = %d\n", HP_GetIdOfLastBlock(inputFileDesc));
     while (chunkSize <= HP_GetIdOfLastBlock(inputFileDesc)) {
         outputFileDesc = nextOutputFile(fileCounter);
         merge(inputFileDesc, chunkSize, bWay, outputFileDesc);
