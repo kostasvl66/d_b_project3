@@ -82,65 +82,125 @@
 //     }
 // }
 
-void merge(int input_FileDesc,
-           int chunkSize,
-           int bWay,
-           int output_FileDesc) {
+// void merge(int input_FileDesc,
+//            int chunkSize,
+//            int bWay,
+//            int output_FileDesc) {
+//     CHUNK_Iterator chunkIt =
+//         CHUNK_CreateIterator(input_FileDesc, chunkSize);
+
+//     while (1) {
+//         CHUNK chunks[bWay];
+//         CHUNK_RecordIterator recIts[bWay];
+//         Record currentRecords[bWay];
+//         bool active[bWay];
+
+//         int actualChunks = 0;
+
+//         /* Πάρε έως bWay chunks */
+//         for (int i = 0; i < bWay; i++) {
+//             if (CHUNK_GetNext(&chunkIt, &chunks[i]) == 0) {
+//                 recIts[i] = CHUNK_CreateRecordIterator(&chunks[i]);
+//                 if (CHUNK_GetNextRecord(&recIts[i], &currentRecords[i]) == 0) {
+//                     active[i] = true;
+//                     actualChunks++;
+//                 } else {
+//                     active[i] = false;
+//                 }
+//             } else {
+//                 active[i] = false;
+//             }
+//         }
+
+//         /* Αν δεν πήραμε κανένα chunk, τέλος */
+//         if (actualChunks == 0)
+//             break;
+
+//         /* Merge loop */
+//         while (1) {
+//             int minIdx = -1;
+
+//             for (int i = 0; i < bWay; i++) {
+//                 if (!active[i])
+//                     continue;
+
+//                 if (minIdx == -1 ||
+//                     shouldSwap(&currentRecords[minIdx],
+//                                &currentRecords[i])) {
+//                     minIdx = i;
+//                 }
+//             }
+
+//             if (minIdx == -1)
+//                 break; // όλοι οι iterators τελείωσαν
+
+//             /* Γράψε το μικρότερο record στο output */
+//             HP_InsertEntry(output_FileDesc, currentRecords[minIdx]);
+
+//             /* Προχώρα τον iterator που το έδωσε */
+//             if (CHUNK_GetNextRecord(&recIts[minIdx],
+//                                     &currentRecords[minIdx]) != 0) {
+//                 active[minIdx] = false;
+//             }
+//         }
+//     }
+// }
+
+void merge(int input_FileDesc, int chunkSize, int bWay, int output_FileDesc)
+{
     CHUNK_Iterator chunkIt =
         CHUNK_CreateIterator(input_FileDesc, chunkSize);
 
     while (1) {
+
+        /* ===== Φόρτωση έως bWay chunks ===== */
         CHUNK chunks[bWay];
         CHUNK_RecordIterator recIts[bWay];
-        Record currentRecords[bWay];
-        bool active[bWay];
+        Record current[bWay];
+        bool hasRecord[bWay];
 
-        int actualChunks = 0;
+        int activeChunks = 0;
 
-        /* Πάρε έως bWay chunks */
         for (int i = 0; i < bWay; i++) {
             if (CHUNK_GetNext(&chunkIt, &chunks[i]) == 0) {
                 recIts[i] = CHUNK_CreateRecordIterator(&chunks[i]);
-                if (CHUNK_GetNextRecord(&recIts[i], &currentRecords[i]) == 0) {
-                    active[i] = true;
-                    actualChunks++;
+                if (CHUNK_GetNextRecord(&recIts[i], &current[i]) == 0) {
+                    hasRecord[i] = true;
+                    activeChunks++;
                 } else {
-                    active[i] = false;
+                    hasRecord[i] = false;
                 }
             } else {
-                active[i] = false;
+                hasRecord[i] = false;
             }
         }
 
-        /* Αν δεν πήραμε κανένα chunk, τέλος */
-        if (actualChunks == 0)
+        /* Αν δεν φορτώθηκε κανένα chunk → τέλος */
+        if (activeChunks == 0)
             break;
 
-        /* Merge loop */
-        while (1) {
+        /* ===== Κλασικό b-way merge ===== */
+        while (activeChunks > 0) {
+
             int minIdx = -1;
 
             for (int i = 0; i < bWay; i++) {
-                if (!active[i])
+                if (!hasRecord[i])
                     continue;
 
                 if (minIdx == -1 ||
-                    shouldSwap(&currentRecords[minIdx],
-                               &currentRecords[i])) {
+                    shouldSwap(&current[minIdx], &current[i])) {
                     minIdx = i;
                 }
             }
 
-            if (minIdx == -1)
-                break; // όλοι οι iterators τελείωσαν
+            /* Γράφουμε το μικρότερο record στο output */
+            HP_InsertEntry(output_FileDesc, current[minIdx]);
 
-            /* Γράψε το μικρότερο record στο output */
-            HP_InsertEntry(output_FileDesc, currentRecords[minIdx]);
-
-            /* Προχώρα τον iterator που το έδωσε */
-            if (CHUNK_GetNextRecord(&recIts[minIdx],
-                                    &currentRecords[minIdx]) != 0) {
-                active[minIdx] = false;
+            /* Προχωράμε τον iterator του συγκεκριμένου chunk */
+            if (CHUNK_GetNextRecord(&recIts[minIdx], &current[minIdx]) != 0) {
+                hasRecord[minIdx] = false;
+                activeChunks--;
             }
         }
     }
